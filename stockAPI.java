@@ -7,11 +7,9 @@ import java.net.http.HttpResponse;
 //FILE HANDLING
 import java.io.FileWriter;
 import java.io.File;
-import java.io.IOException;
 
 //INPUT AND SHI
 import java.util.Scanner;
-import java.util.concurrent.*;
 
 //FOR URL MODIFICATION 
 import java.net.URLEncoder;
@@ -91,7 +89,7 @@ public class stockAPI {
         return gson.toJson(je);
     }
 
-    public static void saveToFile(String filename, String data) {
+    public static void saveToFile(String data) {
         try {
 
             File folder = new File("stocks");
@@ -104,7 +102,7 @@ public class stockAPI {
 
             Thread.sleep(50);
 
-            File file = new File(folder, filename);
+            File file = new File(folder, "stockname.json");
             FileWriter writer = new FileWriter(file);
             writer.write(data);
             writer.close();
@@ -124,7 +122,7 @@ public class stockAPI {
                     String json = yahoofin.getRawData(symbol, "1d", "max");
                     String pretty = prettyJson(json);
 
-                    saveToFile("stockname.json", pretty);
+                    saveToFile(pretty);
 
                     Thread.sleep(intervalMillis);
 
@@ -138,6 +136,31 @@ public class stockAPI {
         updater.start();
     }
 
+    public static double getPrice(String symbol) {
+        try {
+            saveToFile(symbol);
+            String url = "https://query1.finance.yahoo.com/v8/finance/chart/" + symbol;
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+            JsonObject meta = json
+                    .getAsJsonObject("chart")
+                    .getAsJsonArray("result")
+                    .get(0).getAsJsonObject()
+                    .getAsJsonObject("meta");
+
+            return meta.get("regularMarketPrice").getAsDouble();
+
+        } catch (Exception e) {
+            System.out.println("Gson Error fetching price for " + symbol + ": " + e.getMessage());
+            return -1;
+        }
+    }
 
     public static void main(String[] args) {
 
@@ -158,7 +181,6 @@ public class stockAPI {
             try {
                 Thread.sleep(5000);
             } catch (Exception e) {}
-        }
-        
+        }   
     }
 }

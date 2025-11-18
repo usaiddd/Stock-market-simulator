@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class Stock implements Runnable{
+class Stock implements Runnable{
     String name="";
     Double currentPrice;
     Double previousPrice;
@@ -15,8 +15,8 @@ public class Stock implements Runnable{
     public void run(){
         System.out.println("Stock Thread running");
     }
-    public void updatePrice(Double currentPrice){
-        this.currentPrice=currentPrice;
+    public void updatePrice(){
+         // 10 second waala
     }
     public Double getPrevPrice(){
         return previousPrice;
@@ -29,5 +29,8 @@ public class Stock implements Runnable{
     }
     public int getQuantity(){
         return quantity;
+    }
+    public Double getCurPrice(){ 
+        return currentPrice; 
     }
 }
